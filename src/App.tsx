@@ -889,14 +889,15 @@ export default function App() {
   // Global keyboard shortcuts (Spacebar for Play/Stop)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is focused on input/search fields
+      if (
+        document.activeElement?.tagName === "INPUT" ||
+        document.activeElement?.tagName === "TEXTAREA"
+      ) {
+        return;
+      }
+
       if (e.code === "Space") {
-        // Ignore if user is focused on input/search fields
-        if (
-          document.activeElement?.tagName === "INPUT" ||
-          document.activeElement?.tagName === "TEXTAREA"
-        ) {
-          return;
-        }
         e.preventDefault(); // Stop default page scrolling
 
         if (isCompositionMode) {
@@ -922,6 +923,30 @@ export default function App() {
             }
           });
         }
+      } else if (e.code === "ArrowLeft") {
+        if (isCompositionMode && selectedCompositionIndex !== null) {
+          e.preventDefault();
+          if (selectedCompositionIndex > 0) {
+            handleSelectCompositionIndex(selectedCompositionIndex - 1);
+          }
+        } else if (!isCompositionMode) {
+          e.preventDefault();
+          if (currentNoteIndex > 0) {
+            changeNoteIndex(currentNoteIndex - 1);
+          }
+        }
+      } else if (e.code === "ArrowRight") {
+        if (isCompositionMode && selectedCompositionIndex !== null) {
+          e.preventDefault();
+          if (selectedCompositionIndex < compositionNotes.length - 1) {
+            handleSelectCompositionIndex(selectedCompositionIndex + 1);
+          }
+        } else if (!isCompositionMode) {
+          e.preventDefault();
+          if (currentNoteIndex < notesList.length - 1) {
+            changeNoteIndex(currentNoteIndex + 1);
+          }
+        }
       }
     };
 
@@ -929,7 +954,7 @@ export default function App() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isCompositionMode, currentNoteIndex, isConcertPitch]);
+  }, [isCompositionMode, selectedCompositionIndex, currentNoteIndex, compositionNotes, isConcertPitch]);
 
   // Composition Mode Helpers
   const handleSelectCompositionIndex = (index: number | null) => {
@@ -2652,18 +2677,18 @@ export default function App() {
                               </span>
                               <div className="flex items-center gap-1">
                                 <button 
-                                  onClick={() => handleMoveNote(selectedCompositionIndex, 'left')}
+                                  onClick={() => handleSelectCompositionIndex(selectedCompositionIndex - 1)}
                                   disabled={selectedCompositionIndex === 0}
                                   className="p-1 border border-[#1a1a1a]/10 hover:bg-[#1a1a1a]/5 rounded disabled:opacity-20 transition"
-                                  title="Shift Left"
+                                  title="Select Previous Note"
                                 >
                                   <ChevronLeft className="w-3.5 h-3.5" />
                                 </button>
                                 <button 
-                                  onClick={() => handleMoveNote(selectedCompositionIndex, 'right')}
+                                  onClick={() => handleSelectCompositionIndex(selectedCompositionIndex + 1)}
                                   disabled={selectedCompositionIndex === compositionNotes.length - 1}
                                   className="p-1 border border-[#1a1a1a]/10 hover:bg-[#1a1a1a]/5 rounded disabled:opacity-20 transition"
-                                  title="Shift Right"
+                                  title="Select Next Note"
                                 >
                                   <ChevronRight className="w-3.5 h-3.5" />
                                 </button>
@@ -2742,6 +2767,29 @@ export default function App() {
                                 <span className="text-sm font-sans">⁀</span>
                                 <span>Tie</span>
                               </button>
+                            </div>
+
+                            {/* Reorder Note Position */}
+                            <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-[#1a1a1a]/5">
+                              <span className="text-[10px] font-mono text-[#1a1a1a]/40 uppercase font-bold tracking-wider">Reorder Position</span>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleMoveNote(selectedCompositionIndex, 'left')}
+                                  disabled={selectedCompositionIndex === 0}
+                                  className="flex-1 py-1.5 px-2.5 border border-[#1a1a1a]/15 hover:bg-[#1a1a1a]/5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 disabled:opacity-20 shadow-sm"
+                                  title="Shift Left (Swap with previous note)"
+                                >
+                                  <span>← Move Left</span>
+                                </button>
+                                <button
+                                  onClick={() => handleMoveNote(selectedCompositionIndex, 'right')}
+                                  disabled={selectedCompositionIndex === compositionNotes.length - 1}
+                                  className="flex-1 py-1.5 px-2.5 border border-[#1a1a1a]/15 hover:bg-[#1a1a1a]/5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 disabled:opacity-20 shadow-sm"
+                                  title="Shift Right (Swap with next note)"
+                                >
+                                  <span>Move Right →</span>
+                                </button>
+                              </div>
                             </div>
                           </>
                         ) : (
