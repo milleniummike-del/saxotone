@@ -318,10 +318,14 @@ class SaxSynthesizer {
     this.filter.frequency.setValueAtTime(playFrequency * 2.2, now);
     this.filter.Q.setValueAtTime(2.0, now);
 
-    // Volume envelope
+    // Volume envelope (designed to handle extremely short notes dynamically)
+    const attackTime = Math.min(0.08, duration * 0.25);
+    const releaseTime = Math.min(0.25, duration * 0.5);
+    const sustainTime = Math.max(now + attackTime, now + duration - releaseTime);
+
     this.gain.gain.setValueAtTime(0, now);
-    this.gain.gain.linearRampToValueAtTime(volume, now + 0.08); // Attack
-    this.gain.gain.setValueAtTime(volume, now + duration - 0.25); // Sustain
+    this.gain.gain.linearRampToValueAtTime(volume, now + attackTime); // Attack
+    this.gain.gain.setValueAtTime(volume, sustainTime); // Sustain
     this.gain.gain.exponentialRampToValueAtTime(0.001, now + duration); // Decay/Release
 
     // Natural classical saxophone vibrato: ~5.6 Hz
