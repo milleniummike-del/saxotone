@@ -1,0 +1,6 @@
+{
+  "name": "Alto Saxophone Fingering Guide",
+  "description": "Interactive music staff and visual fingering chart for Alto Saxophone notes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
