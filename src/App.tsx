@@ -2086,6 +2086,59 @@ export default function App() {
                   )}
                 </div>
 
+                {/* Playback Settings (Play Melody, Loop, Tempo) below the title */}
+                {isCompositionMode && (
+                  <div className="flex flex-wrap items-center gap-3 bg-[#fdfcfb] border border-[#1a1a1a]/10 p-3.5 rounded-2xl">
+                    {isMelodyPlaying ? (
+                      <button
+                        onClick={handleStopNote}
+                        className="flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-4 py-2 rounded-full transition shadow-sm"
+                      >
+                        <Square className="w-3 h-3 fill-current" />
+                        <span>Stop Melody</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          handleStopNote();
+                          handleSelectCompositionIndex(0);
+                          setActiveMelodyIndex(0);
+                          setIsMelodyPlaying(true);
+                        }}
+                        className="flex items-center justify-center gap-2 bg-[#1a1a1a] hover:bg-[#333333] text-white font-bold text-xs px-4.5 py-2 rounded-full transition shadow-sm"
+                      >
+                        <Play className="w-3 h-3 fill-current" />
+                        <span>Play Melody</span>
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => setIsLooping(!isLooping)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-full text-xs font-semibold transition ${
+                        isLooping 
+                          ? 'border-[#c5a059] bg-[#c5a059]/10 text-[#c5a059]' 
+                          : 'border-[#1a1a1a]/10 text-[#1a1a1a]/60 hover:text-[#1a1a1a]/80'
+                      }`}
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>Loop</span>
+                    </button>
+
+                    <div className="flex items-center gap-2 border border-[#1a1a1a]/10 px-3 py-1.5 rounded-full bg-[#fdfcfb]">
+                      <span className="text-[10px] font-bold uppercase font-mono text-[#1a1a1a]/40">Tempo:</span>
+                      <input 
+                        type="range" 
+                        min="60" 
+                        max="185" 
+                        value={tempo} 
+                        onChange={(e) => setTempo(parseInt(e.target.value))}
+                        className="w-20 accent-[#c5a059]"
+                      />
+                      <span className="text-xs font-mono font-bold text-[#1a1a1a]">{tempo} BPM</span>
+                    </div>
+                  </div>
+                )}
+
                 {/* SVG Treble Clef Music Staff */}
                 <div 
                   ref={staffContainerRef}
@@ -2924,59 +2977,7 @@ export default function App() {
 
                     {/* Playback Settings & Presets Row */}
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-[#fdfcfb] border border-[#1a1a1a]/10 p-4 rounded-2xl">
-                      
-                      {/* Left: Playback controls */}
-                      <div className="flex flex-wrap items-center gap-3">
-                        {isMelodyPlaying ? (
-                          <button
-                            onClick={handleStopNote}
-                            className="flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-4 py-2 rounded-full transition shadow-sm"
-                          >
-                            <Square className="w-3 h-3 fill-current" />
-                            <span>Stop Melody</span>
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => {
-                              handleStopNote();
-                              handleSelectCompositionIndex(0);
-                              setActiveMelodyIndex(0);
-                              setIsMelodyPlaying(true);
-                            }}
-                            className="flex items-center justify-center gap-2 bg-[#1a1a1a] hover:bg-[#333333] text-white font-bold text-xs px-4.5 py-2 rounded-full transition shadow-sm"
-                          >
-                            <Play className="w-3 h-3 fill-current" />
-                            <span>Play Melody</span>
-                          </button>
-                        )}
-
-                        <button
-                          onClick={() => setIsLooping(!isLooping)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-full text-xs font-semibold transition ${
-                            isLooping 
-                              ? 'border-[#c5a059] bg-[#c5a059]/10 text-[#c5a059]' 
-                              : 'border-[#1a1a1a]/10 text-[#1a1a1a]/60 hover:text-[#1a1a1a]/80'
-                          }`}
-                        >
-                          <RotateCcw className="w-3 h-3" />
-                          <span>Loop</span>
-                        </button>
-
-                        <div className="flex items-center gap-2 border border-[#1a1a1a]/10 px-3 py-1.5 rounded-full bg-[#fdfcfb]">
-                          <span className="text-[10px] font-bold uppercase font-mono text-[#1a1a1a]/40">Tempo:</span>
-                          <input 
-                            type="range" 
-                            min="60" 
-                            max="185" 
-                            value={tempo} 
-                            onChange={(e) => setTempo(parseInt(e.target.value))}
-                            className="w-20 accent-[#c5a059]"
-                          />
-                          <span className="text-xs font-mono font-bold text-[#1a1a1a]">{tempo} BPM</span>
-                        </div>
-                      </div>
-
-                      {/* Right: Presets */}
+                      {/* Left: Presets */}
                       <div className="flex items-center gap-2.5 flex-wrap">
                         <span className="text-[10px] font-bold uppercase font-mono text-[#1a1a1a]/50">Presets:</span>
                         <div className="flex flex-wrap gap-1.5">
