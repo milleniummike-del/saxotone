@@ -522,13 +522,20 @@ const MELODY_PRESETS_METADATA = {
   careless: { keySignature: 5, instrumentKey: 'Eb-alto' as const } // D Minor / F Major
 };
 
-const getBeatLength = (type: '1/1' | '1/2' | '1/4' | '1/8' | '1/16') => {
+export type NoteDurationType = '1/1' | '1/2' | '1/4' | '1/8' | '1/16' | '1/1.' | '1/2.' | '1/4.' | '1/8.' | '1/16.';
+
+const getBeatLength = (type: NoteDurationType) => {
   switch(type) {
     case '1/1': return 4;
     case '1/2': return 2;
     case '1/4': return 1;
     case '1/8': return 0.5;
     case '1/16': return 0.25;
+    case '1/1.': return 6;
+    case '1/2.': return 3;
+    case '1/4.': return 1.5;
+    case '1/8.': return 0.75;
+    case '1/16.': return 0.375;
     default: return 1;
   }
 };
@@ -647,7 +654,7 @@ export default function App() {
 
   // Melody Composer state
   const [isCompositionMode, setIsCompositionMode] = useState<boolean>(false);
-  const [compositionNotes, setCompositionNotes] = useState<{ id: string; noteId: string; durationType: '1/1' | '1/2' | '1/4' | '1/8' | '1/16'; tie?: boolean }[]>([
+  const [compositionNotes, setCompositionNotes] = useState<{ id: string; noteId: string; durationType: NoteDurationType; tie?: boolean }[]>([
     { id: "p1", noteId: "E4", durationType: "1/4", tie: false },
     { id: "p2", noteId: "D4", durationType: "1/4", tie: false },
     { id: "p3", noteId: "C4", durationType: "1/4", tie: false },
@@ -657,7 +664,7 @@ export default function App() {
     { id: "p7", noteId: "E4", durationType: "1/2", tie: false }
   ]);
   const [selectedCompositionIndex, setSelectedCompositionIndex] = useState<number | null>(null);
-  const [currentDurationType, setCurrentDurationType] = useState<'1/1' | '1/2' | '1/4' | '1/8' | '1/16'>('1/4');
+  const [currentDurationType, setCurrentDurationType] = useState<NoteDurationType>('1/4');
   const [tempo, setTempo] = useState<number>(110); // BPM
   const [timeSignature, setTimeSignature] = useState<'4/4' | '3/4' | '2/4' | '6/8'>('4/4');
   const [isMelodyPlaying, setIsMelodyPlaying] = useState<boolean>(false);
@@ -669,7 +676,7 @@ export default function App() {
   const [savedMelodies, setSavedMelodies] = useState<{ 
     id: string; 
     name: string; 
-    notes: { noteId: string; durationType: '1/1' | '1/2' | '1/4' | '1/8' | '1/16'; tie?: boolean }[]; 
+    notes: { noteId: string; durationType: NoteDurationType; tie?: boolean }[]; 
     tempo: number;
     keySignature?: number;
     instrumentKey?: 'Eb-alto' | 'Bb-tenor' | 'Bb-soprano' | 'Eb-baritone' | 'C';
@@ -1087,7 +1094,7 @@ export default function App() {
     setTimeout(() => setSuccessMessage(""), 4000);
   };
 
-  const handleDurationChange = (type: '1/1' | '1/2' | '1/4' | '1/8' | '1/16') => {
+  const handleDurationChange = (type: NoteDurationType) => {
     setCurrentDurationType(type);
     if (selectedCompositionIndex !== null && compositionNotes[selectedCompositionIndex]) {
       setCompositionNotes(prev => {
@@ -1233,7 +1240,7 @@ export default function App() {
     const presetData = MELODY_PRESETS[presetKey].map((p, idx) => ({
       id: `p_${idx}_${Date.now()}`,
       noteId: p.noteId,
-      durationType: p.durationType as '1/1' | '1/2' | '1/4' | '1/8' | '1/16',
+      durationType: p.durationType as NoteDurationType,
       tie: (p as any).tie || false
     }));
     setCompositionNotes(presetData);
@@ -1255,7 +1262,7 @@ export default function App() {
     const loadedNotes = melody.notes.map((n, idx) => ({
       id: `u_${idx}_${Date.now()}`,
       noteId: n.noteId,
-      durationType: n.durationType as '1/1' | '1/2' | '1/4' | '1/8' | '1/16',
+      durationType: n.durationType as NoteDurationType,
       tie: n.tie || false
     }));
     setCompositionNotes(loadedNotes);
@@ -1363,7 +1370,7 @@ export default function App() {
           const bpm = midi.header.tempos && midi.header.tempos.length > 0 ? midi.header.tempos[0].bpm : tempo;
           const beatCount = note.duration * (bpm / 60);
 
-          let durationType: '1/1' | '1/2' | '1/4' | '1/8' | '1/16' = '1/4';
+          let durationType: NoteDurationType = '1/4';
           if (beatCount >= 3) {
             durationType = '1/1';
           } else if (beatCount >= 1.5) {
@@ -1510,7 +1517,7 @@ export default function App() {
           throw new Error("No notes found in the XML file.");
         }
 
-        const importedNotes: { id: string; noteId: string; durationType: '1/1' | '1/2' | '1/4' | '1/8' | '1/16'; tie?: boolean }[] = [];
+        const importedNotes: { id: string; noteId: string; durationType: NoteDurationType; tie?: boolean }[] = [];
         
         noteElements.forEach((noteNode, index) => {
           const noteIdEl = noteNode.querySelector("noteId");
@@ -1518,10 +1525,10 @@ export default function App() {
           const tieEl = noteNode.querySelector("tie");
 
           const noteId = noteIdEl?.textContent || "REST";
-          const durationType = (durationTypeEl?.textContent || "1/4") as '1/1' | '1/2' | '1/4' | '1/8' | '1/16';
+          const durationType = (durationTypeEl?.textContent || "1/4") as NoteDurationType;
           const tie = tieEl?.textContent === "true";
 
-          const validDurations = ['1/1', '1/2', '1/4', '1/8', '1/16'];
+          const validDurations = ['1/1', '1/2', '1/4', '1/8', '1/16', '1/1.', '1/2.', '1/4.', '1/8.', '1/16.'];
           const finalDuration = validDurations.includes(durationType) ? durationType : '1/4';
 
           importedNotes.push({
@@ -1694,7 +1701,8 @@ export default function App() {
   // Click on staff to select or add notes
   const handleStaffClick = (e: React.MouseEvent<SVGSVGElement>) => {
     if (appMode !== 'learn') return;
-    const rect = e.currentTarget.getBoundingClientRect();
+    const svgElement = e.currentTarget.querySelector('svg');
+    const rect = svgElement ? svgElement.getBoundingClientRect() : e.currentTarget.getBoundingClientRect();
     const staffWidth = isCompositionMode ? Math.max(600, 140 + (compositionNotes.length + 1) * 55 + 40) : 600;
     
     // Scale coordinates into the SVG coordinate space (0..staffWidth, 0..200)
@@ -1723,13 +1731,7 @@ export default function App() {
         
         if (colIndex >= 0 && colIndex < compositionNotes.length) {
           // Clicked on or near an existing note in the composition!
-          // Update the pitch of this note
-          setCompositionNotes(prev => {
-            const updated = [...prev];
-            updated[colIndex] = { ...updated[colIndex], noteId: clickedNote.id };
-            return updated;
-          });
-          // Set selection
+          // Just select it - do not change the pitch
           handleSelectCompositionIndex(colIndex);
         } else if (colIndex === compositionNotes.length || clickX >= 140 + compositionNotes.length * 55 - 20) {
           // Clicked to the right of the last note -> Append a new note!
@@ -1752,7 +1754,8 @@ export default function App() {
   // Hover over staff
   const handleStaffMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
     if (appMode !== 'learn') return;
-    const rect = e.currentTarget.getBoundingClientRect();
+    const svgElement = e.currentTarget.querySelector('svg');
+    const rect = svgElement ? svgElement.getBoundingClientRect() : e.currentTarget.getBoundingClientRect();
     const staffWidth = isCompositionMode ? Math.max(600, 140 + (compositionNotes.length + 1) * 55 + 40) : 600;
     
     const hoverX = (e.clientX - rect.left) * (staffWidth / rect.width);
@@ -2220,12 +2223,14 @@ export default function App() {
                           if (!isRest && !noteInfo) return null;
 
                           const noteX = 140 + idx * 55;
+                          const isDotted = item.durationType.endsWith('.');
+                          const baseDuration = isDotted ? item.durationType.slice(0, -1) : item.durationType;
                           const noteY = isRest ? 100 : calculateStaffY(noteInfo!.staffOffset);
                           const isSelected = selectedCompositionIndex === idx;
                           const isCurrentlyPlaying = isMelodyPlaying && activeMelodyIndex === idx;
 
                           const stemUp = noteInfo ? noteInfo.staffOffset < 0 : false;
-                          const isOpenNote = item.durationType === '1/1' || item.durationType === '1/2';
+                          const isOpenNote = baseDuration === '1/1' || baseDuration === '1/2';
                           const fillStyle = isCurrentlyPlaying
                             ? '#c5a059'
                             : isSelected
@@ -2260,32 +2265,37 @@ export default function App() {
 
                               {isRest ? (
                                 // Render Rest Symbol
-                                (() => {
-                                  if (item.durationType === '1/1') {
-                                    return <rect x={noteX - 8} y={84} width="16" height="8" fill={fillStyle} />;
-                                  } else if (item.durationType === '1/2') {
-                                    return <rect x={noteX - 8} y={92} width="16" height="8" fill={fillStyle} />;
-                                  } else if (item.durationType === '1/4') {
-                                    return <path d={`M ${noteX - 3} 78 C ${noteX + 3} 82, ${noteX + 5} 88, ${noteX - 1} 94 C ${noteX - 5} 98, ${noteX - 3} 103, ${noteX + 3} 103 C ${noteX - 2} 110, ${noteX - 5} 115, ${noteX - 1} 122 C ${noteX + 1} 125, ${noteX - 2} 128, ${noteX - 3} 128`} fill="none" stroke={fillStyle} strokeWidth="2.5" strokeLinecap="round" />;
-                                  } else if (item.durationType === '1/8') {
-                                    return (
-                                      <g>
-                                        <circle cx={noteX - 3} cy={94} r="3" fill={fillStyle} />
-                                        <path d={`M ${noteX - 3} 94 Q ${noteX + 4} 90, ${noteX + 4} 84 Q ${noteX + 2} 94, ${noteX - 2} 114`} fill="none" stroke={fillStyle} strokeWidth="2" strokeLinecap="round" />
-                                      </g>
-                                    );
-                                  } else if (item.durationType === '1/16') {
-                                    return (
-                                      <g>
-                                        <circle cx={noteX - 3} cy={90} r="2.5" fill={fillStyle} />
-                                        <path d={`M ${noteX - 3} 90 Q ${noteX + 4} 86, ${noteX + 4} 80 Q ${noteX + 2} 90, ${noteX - 2} 102`} fill="none" stroke={fillStyle} strokeWidth="2" strokeLinecap="round" />
-                                        <circle cx={noteX - 5} cy={102} r="2.5" fill={fillStyle} />
-                                        <path d={`M ${noteX - 5} 102 Q ${noteX + 2} 98, ${noteX + 2} 92 Q ${noteX} 102, ${noteX - 4} 114`} fill="none" stroke={fillStyle} strokeWidth="2" strokeLinecap="round" />
-                                      </g>
-                                    );
-                                  }
-                                  return null;
-                                })()
+                                <>
+                                  {(() => {
+                                    if (baseDuration === '1/1') {
+                                      return <rect x={noteX - 8} y={84} width="16" height="8" fill={fillStyle} />;
+                                    } else if (baseDuration === '1/2') {
+                                      return <rect x={noteX - 8} y={92} width="16" height="8" fill={fillStyle} />;
+                                    } else if (baseDuration === '1/4') {
+                                      return <path d={`M ${noteX - 3} 78 C ${noteX + 3} 82, ${noteX + 5} 88, ${noteX - 1} 94 C ${noteX - 5} 98, ${noteX - 3} 103, ${noteX + 3} 103 C ${noteX - 2} 110, ${noteX - 5} 115, ${noteX - 1} 122 C ${noteX + 1} 125, ${noteX - 2} 128, ${noteX - 3} 128`} fill="none" stroke={fillStyle} strokeWidth="2.5" strokeLinecap="round" />;
+                                    } else if (baseDuration === '1/8') {
+                                      return (
+                                        <g>
+                                          <circle cx={noteX - 3} cy={94} r="3" fill={fillStyle} />
+                                          <path d={`M ${noteX - 3} 94 Q ${noteX + 4} 90, ${noteX + 4} 84 Q ${noteX + 2} 94, ${noteX - 2} 114`} fill="none" stroke={fillStyle} strokeWidth="2" strokeLinecap="round" />
+                                        </g>
+                                      );
+                                    } else if (baseDuration === '1/16') {
+                                      return (
+                                        <g>
+                                          <circle cx={noteX - 3} cy={90} r="2.5" fill={fillStyle} />
+                                          <path d={`M ${noteX - 3} 90 Q ${noteX + 4} 86, ${noteX + 4} 80 Q ${noteX + 2} 90, ${noteX - 2} 102`} fill="none" stroke={fillStyle} strokeWidth="2" strokeLinecap="round" />
+                                          <circle cx={noteX - 5} cy={102} r="2.5" fill={fillStyle} />
+                                          <path d={`M ${noteX - 5} 102 Q ${noteX + 2} 98, ${noteX + 2} 92 Q ${noteX} 102, ${noteX - 4} 114`} fill="none" stroke={fillStyle} strokeWidth="2" strokeLinecap="round" />
+                                        </g>
+                                      );
+                                    }
+                                    return null;
+                                  })()}
+                                  {isDotted && (
+                                    <circle cx={noteX + 14} cy={92} r="2.5" fill={fillStyle} />
+                                  )}
+                                </>
                               ) : (
                                 <>
                                   {/* Ledger Lines */}
@@ -2320,8 +2330,13 @@ export default function App() {
                                     strokeWidth={isOpenNote ? "3" : "0"}
                                   />
 
+                                  {/* Dotted note dot */}
+                                  {isDotted && (
+                                    <circle cx={noteX + 16} cy={noteY} r="2.5" fill={fillStyle} />
+                                  )}
+
                                   {/* Stem */}
-                                  {item.durationType !== '1/1' && (
+                                  {baseDuration !== '1/1' && (
                                     stemUp ? (
                                       <line x1={noteX + 9} y1={noteY} x2={noteX + 9} y2={noteY - 48} stroke={fillStyle} strokeWidth="2" />
                                     ) : (
@@ -2330,7 +2345,7 @@ export default function App() {
                                   )}
 
                                   {/* Eighth Note Flag */}
-                                  {item.durationType === '1/8' && (
+                                  {baseDuration === '1/8' && (
                                     stemUp ? (
                                       <path d={`M ${noteX + 9} ${noteY - 48} Q ${noteX + 21} ${noteY - 34}, ${noteX + 19} ${noteY - 18} Q ${noteX + 15} ${noteY - 28}, ${noteX + 9} ${noteY - 38}`} fill={fillStyle} />
                                     ) : (
@@ -2339,7 +2354,7 @@ export default function App() {
                                   )}
 
                                   {/* Sixteenth Note Flags */}
-                                  {item.durationType === '1/16' && (
+                                  {baseDuration === '1/16' && (
                                     stemUp ? (
                                       <g>
                                         <path d={`M ${noteX + 9} ${noteY - 48} Q ${noteX + 21} ${noteY - 34}, ${noteX + 19} ${noteY - 18} Q ${noteX + 15} ${noteY - 28}, ${noteX + 9} ${noteY - 38}`} fill={fillStyle} />
@@ -2740,7 +2755,7 @@ export default function App() {
                         )}
                       </div>
 
-                      {/* Right Side: Quick Duration Selection & Action Buttons */}
+                       {/* Right Side: Quick Duration Selection & Action Buttons */}
                       <div className="flex-[1.5] flex flex-col gap-3">
                         {/* Note Duration toggles */}
                         <div className="flex flex-col gap-1.5">
@@ -2751,11 +2766,11 @@ export default function App() {
                             {(['1/1', '1/2', '1/4', '1/8', '1/16'] as const).map((type) => {
                               const labels = { '1/1': 'Whole', '1/2': 'Half', '1/4': 'Quarter', '1/8': 'Eighth', '1/16': '16th' };
                               const symbols = { '1/1': '𝅝', '1/2': '𝅗𝅥', '1/4': '𝅘𝅥', '1/8': '𝅘𝅥𝅮', '1/16': '𝅘𝅥𝅯' };
-                              const isActive = currentDurationType === type;
+                              const isActive = currentDurationType === type || currentDurationType === (type + '.');
                               return (
                                 <button
                                   key={type}
-                                  onClick={() => handleDurationChange(type)}
+                                  onClick={() => handleDurationChange(currentDurationType.endsWith('.') ? (type + '.') as NoteDurationType : type)}
                                   className={`py-2 px-1 border rounded-xl flex flex-col items-center justify-center transition shadow-sm ${
                                     isActive 
                                       ? 'border-[#c5a059] bg-[#c5a059]/15 text-[#1a1a1a] font-black' 
@@ -2768,6 +2783,24 @@ export default function App() {
                               );
                             })}
                           </div>
+
+                          {/* Dotted modifier toggle */}
+                          <button
+                            onClick={() => {
+                              const isCurrentlyDotted = currentDurationType.endsWith('.');
+                              const baseType = isCurrentlyDotted ? currentDurationType.slice(0, -1) : currentDurationType;
+                              const newType = isCurrentlyDotted ? baseType : (baseType + '.');
+                              handleDurationChange(newType as NoteDurationType);
+                            }}
+                            className={`mt-1 py-1.5 px-3 border rounded-xl flex items-center justify-center gap-2 transition shadow-sm ${
+                              currentDurationType.endsWith('.')
+                                ? 'border-[#c5a059] bg-[#c5a059]/15 text-[#1a1a1a] font-bold' 
+                                : 'border-[#1a1a1a]/10 bg-white hover:bg-[#f4f2ee] text-[#1a1a1a]/70 font-semibold'
+                            }`}
+                          >
+                            <span className="text-sm font-mono">•</span>
+                            <span className="text-xs uppercase tracking-wider">Dotted Duration</span>
+                          </button>
                         </div>
 
                         {/* Note actions: Add, Delete, Clear */}
