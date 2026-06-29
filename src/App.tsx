@@ -56,7 +56,7 @@ const saxKeysConfig: SaxKeyConfig[] = [
     label: "OK",
     group: "back",
     tooltip: "Octave Key (LH Thumb) - Raises pitch by an octave",
-    d: "M 45 105 A 15 15 0 0 1 75 105 A 15 15 0 0 0 45 105 Z" // Crescent shape
+    d: "M 45 105 A 15 15 0 0 1 75 105 A 25 25 0 0 0 45 105 Z" // Crescent shape
   },
   // Front F (Above LH1)
   {
@@ -619,7 +619,7 @@ export default function App() {
   // App states
   const [currentNoteIndex, setCurrentNoteIndex] = useState<number>(13); // Default to B4 (index 13)
   const [selectedFingeringIndex, setSelectedFingeringIndex] = useState<number>(0);
-  const [isConcertPitch, setIsConcertPitch] = useState<boolean>(false);
+  const [isConcertPitch, setIsConcertPitch] = useState<boolean>(true);
   const [instrumentKey, setInstrumentKey] = useState<'Eb-alto' | 'Bb-tenor' | 'Bb-soprano' | 'Eb-baritone' | 'C'>('Eb-alto');
   const [selectedKeySignature, setSelectedKeySignature] = useState<number>(0);
   const [targetTransposeKey, setTargetTransposeKey] = useState<number>(0);
@@ -3666,7 +3666,7 @@ export default function App() {
           </div>
 
           {/* Key Tooltip Indicator */}
-          <div className="w-full bg-[#f4f2ee] p-3 rounded-2xl border border-[#1a1a1a]/10 text-center min-h-[48px] mb-4 flex flex-col justify-center transition-all">
+          <div className="w-full bg-[#f4f2ee] p-3 rounded-2xl border border-[#1a1a1a]/10 text-center min-h-[64px] mb-4 flex flex-col justify-center transition-all">
             {hoveredKey ? (
               <>
                 <span className="text-xs font-bold text-[#c5a059]">{hoveredKey.name}</span>
@@ -3777,8 +3777,8 @@ export default function App() {
 
                     {/* Label Overlay */}
                     <text 
-                      x={key.cx ?? getPathCentroid(key.d).x} 
-                      y={key.cy ?? getPathCentroid(key.d).y}
+                      x={key.cx ?? getPathCentroid(key.id).x} 
+                      y={key.cy ?? getPathCentroid(key.id).y}
                       fill={isActive ? "#ffffff" : "#1a1a1a"} 
                       fontSize="9" 
                       fontWeight="bold" 
@@ -3825,29 +3825,29 @@ export default function App() {
 }
 
 // Utility to find coarse center of a simple path for text labels
-function getPathCentroid(pathStr?: string): { x: number; y: number } {
-  if (!pathStr) return { x: 100, y: 250 };
+function getPathCentroid(keyId?: string): { x: number; y: number } {
+  if (!keyId) return { x: 100, y: 250 };
   
   // Custom lookup based on known coordinates
-  if (pathStr.includes("ok")) return { x: 60, y: 110 };
-  if (pathStr.includes("palm_d")) return { x: 58, y: 118 };
-  if (pathStr.includes("palm_eb")) return { x: 58, y: 148 };
-  if (pathStr.includes("palm_f")) return { x: 58, y: 178 };
+  if (keyId === "ok") return { x: 60, y: 111 };
+  if (keyId === "palm_d") return { x: 58, y: 118 };
+  if (keyId === "palm_eb") return { x: 58, y: 148 };
+  if (keyId === "palm_f") return { x: 58, y: 178 };
 
-  if (pathStr.includes("pinky_g_sharp")) return { x: 68, y: 221 };
-  if (pathStr.includes("pinky_cs")) return { x: 50, y: 226 };
-  if (pathStr.includes("pinky_b")) return { x: 68, y: 236 };
-  if (pathStr.includes("pinky_bb")) return { x: 68, y: 251 };
+  if (keyId === "pinky_g_sharp") return { x: 68, y: 221 };
+  if (keyId === "pinky_cs") return { x: 50, y: 226 };
+  if (keyId === "pinky_b") return { x: 68, y: 236 };
+  if (keyId === "pinky_bb") return { x: 68, y: 251 };
 
-  if (pathStr.includes("side_e")) return { x: 135, y: 268 };
-  if (pathStr.includes("side_c")) return { x: 135, y: 298 };
-  if (pathStr.includes("side_bb")) return { x: 135, y: 328 };
-  if (pathStr.includes("side_f_sharp")) return { x: 135, y: 356 };
+  if (keyId === "side_e") return { x: 135, y: 268 };
+  if (keyId === "side_c") return { x: 135, y: 298 };
+  if (keyId === "side_bb") return { x: 135, y: 328 };
+  if (keyId === "side_f_sharp") return { x: 135, y: 356 };
 
-  if (pathStr.includes("pinky_eb")) return { x: 132, y: 388 };
-  if (pathStr.includes("pinky_c")) return { x: 132, y: 413 };
+  if (keyId === "pinky_eb") return { x: 132, y: 388 };
+  if (keyId === "pinky_c") return { x: 132, y: 413 };
 
-  if (pathStr.includes("high_f_sharp")) return { x: 132, y: 441 };
+  if (keyId === "high_f_sharp") return { x: 132, y: 441 };
 
   return { x: 100, y: 250 };
 }
